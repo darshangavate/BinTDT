@@ -1,18 +1,18 @@
 // src/components/MarketplaceDashboard.tsx
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   ShoppingBag,
   Filter,
   Leaf,
   IndianRupee,
   CheckCircle2,
-} from 'lucide-react';
+} from "lucide-react";
 
-type ListingStatus = 'Available' | 'Reserved' | 'Sold';
+export type ListingStatus = "Available" | "Reserved" | "Sold";
 
-type MaterialType = 'Plastic' | 'Paper' | 'Organic' | 'Metal';
+export type MaterialType = "Plastic" | "Paper" | "Organic" | "Metal";
 
-interface Listing {
+export interface Listing {
   id: string;
   batchId: string;
   truckId: string;
@@ -24,96 +24,57 @@ interface Listing {
   co2SavedKg: number;
 }
 
-// Mock data – replace with real API later
-const MOCK_LISTINGS: Listing[] = [
-  {
-    id: 'LST-101',
-    batchId: 'BATCH-001',
-    truckId: 'Car 1',
-    material: 'Plastic',
-    quantityKg: 120,
-    pricePerKg: 18,
-    status: 'Available',
-    co2SavedKg: 52.3,
-  },
-  {
-    id: 'LST-102',
-    batchId: 'BATCH-002',
-    truckId: 'Car 2',
-    material: 'Paper',
-    quantityKg: 90,
-    pricePerKg: 12,
-    status: 'Sold',
-    buyer: 'GreenPaper Recyclers',
-    co2SavedKg: 37.8,
-  },
-  {
-    id: 'LST-103',
-    batchId: 'BATCH-003',
-    truckId: 'Car 3',
-    material: 'Metal',
-    quantityKg: 45,
-    pricePerKg: 25,
-    status: 'Reserved',
-    buyer: 'CircularMetals Pvt Ltd',
-    co2SavedKg: 29.1,
-  },
-  {
-    id: 'LST-104',
-    batchId: 'BATCH-004',
-    truckId: 'Car 4',
-    material: 'Plastic',
-    quantityKg: 200,
-    pricePerKg: 20,
-    status: 'Available',
-    co2SavedKg: 88.4,
-  },
-];
+interface MarketplaceDashboardProps {
+  listings: Listing[];
+}
 
+// color helpers
 const materialColors: Record<MaterialType, string> = {
-  Plastic: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Paper: 'bg-sky-50 text-sky-700 border-sky-200',
-  Organic: 'bg-lime-50 text-lime-700 border-lime-200',
-  Metal: 'bg-orange-50 text-orange-700 border-orange-200',
+  Plastic: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Paper: "bg-sky-50 text-sky-700 border-sky-200",
+  Organic: "bg-lime-50 text-lime-700 border-lime-200",
+  Metal: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 const statusColors: Record<ListingStatus, string> = {
-  Available: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Reserved: 'bg-amber-50 text-amber-700 border-amber-200',
-  Sold: 'bg-slate-100 text-slate-600 border-slate-200',
+  Available: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Reserved: "bg-amber-50 text-amber-700 border-amber-200",
+  Sold: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
-const MarketplaceDashboard: React.FC = () => {
-  const [materialFilter, setMaterialFilter] = useState<MaterialType | 'All'>(
-    'All'
+const MarketplaceDashboard: React.FC<MarketplaceDashboardProps> = ({
+  listings,
+}) => {
+  const [materialFilter, setMaterialFilter] = useState<MaterialType | "All">(
+    "All"
   );
-  const [statusFilter, setStatusFilter] = useState<ListingStatus | 'All'>(
-    'All'
+  const [statusFilter, setStatusFilter] = useState<ListingStatus | "All">(
+    "All"
   );
 
   const filteredListings = useMemo(() => {
-    return MOCK_LISTINGS.filter((l) => {
+    return listings.filter((l) => {
       const byMaterial =
-        materialFilter === 'All' ? true : l.material === materialFilter;
+        materialFilter === "All" ? true : l.material === materialFilter;
       const byStatus =
-        statusFilter === 'All' ? true : l.status === statusFilter;
+        statusFilter === "All" ? true : l.status === statusFilter;
       return byMaterial && byStatus;
     });
-  }, [materialFilter, statusFilter]);
+  }, [listings, materialFilter, statusFilter]);
 
   const stats = useMemo(() => {
-    const available = MOCK_LISTINGS.filter((l) => l.status === 'Available');
-    const sold = MOCK_LISTINGS.filter((l) => l.status === 'Sold');
+    const available = listings.filter((l) => l.status === "Available");
+    const sold = listings.filter((l) => l.status === "Sold");
 
     const activeLots = available.length;
     const totalRevenue = sold.reduce(
       (sum, l) => sum + l.quantityKg * l.pricePerKg,
       0
     );
-    const totalCo2 = MOCK_LISTINGS.reduce((sum, l) => sum + l.co2SavedKg, 0);
+    const totalCo2 = listings.reduce((sum, l) => sum + l.co2SavedKg, 0);
 
     return { activeLots, totalRevenue, totalCo2 };
-  }, []);
+  }, [listings]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -174,20 +135,20 @@ const MarketplaceDashboard: React.FC = () => {
             {/* Material chips */}
             <FilterGroup
               label="Material"
-              options={['All', 'Plastic', 'Paper', 'Organic', 'Metal']}
+              options={["All", "Plastic", "Paper", "Organic", "Metal"]}
               active={materialFilter}
               onChange={(value) =>
-                setMaterialFilter(value as MaterialType | 'All')
+                setMaterialFilter(value as MaterialType | "All")
               }
             />
 
             {/* Status chips */}
             <FilterGroup
               label="Status"
-              options={['All', 'Available', 'Reserved', 'Sold']}
+              options={["All", "Available", "Reserved", "Sold"]}
               active={statusFilter}
               onChange={(value) =>
-                setStatusFilter(value as ListingStatus | 'All')
+                setStatusFilter(value as ListingStatus | "All")
               }
             />
           </div>
@@ -256,8 +217,8 @@ const FilterGroup = ({
             onClick={() => onChange(opt)}
             className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition ${
               isActive
-                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             {opt}
@@ -274,7 +235,7 @@ const ListingCard = ({ listing }: { listing: Listing }) => {
   const materialClass = materialColors[listing.material];
   const statusClass = statusColors[listing.status];
 
-  const isAvailable = listing.status === 'Available';
+  const isAvailable = listing.status === "Available";
 
   return (
     <article className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition">
@@ -351,7 +312,7 @@ const ListingCard = ({ listing }: { listing: Listing }) => {
           </button>
         ) : (
           <span className="text-[11px] text-slate-500">
-            {listing.status === 'Sold' ? 'Lot sold' : 'Lot reserved'}
+            {listing.status === "Sold" ? "Lot sold" : "Lot reserved"}
           </span>
         )}
       </div>

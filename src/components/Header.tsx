@@ -1,5 +1,5 @@
 // src/components/Header.tsx
-import { Leaf, Download } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 
 interface HeaderProps {
   totalCo2Saved: number;
@@ -38,13 +38,7 @@ const Header: React.FC<HeaderProps> = ({ totalCo2Saved }) => {
             </div>
           </div>
 
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export snapshot
-          </button>
+          
         </div>
       </div>
     </header>

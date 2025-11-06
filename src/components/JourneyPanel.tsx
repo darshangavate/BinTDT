@@ -1,53 +1,86 @@
 // src/components/JourneyPanel.tsx
-import { useState } from 'react';
-import type { BatchData } from './Dashboard';
+import { useState, useMemo } from "react";
+import type { BatchData } from "./Dashboard";
 import {
   CheckCircle2,
   Circle,
   Truck,
   Factory,
   ShoppingBag,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface JourneyPanelProps {
   batch: BatchData;
   onGenerateReport: () => void;
+  onListToMarketplace?: () => void;
 }
 
 const steps = [
   {
     id: 1,
-    label: 'Field collection',
-    description: 'Waste collected and QR-logged at source.',
+    label: "Field collection",
+    description: "Waste collected and QR-logged at source.",
     icon: Truck,
   },
   {
     id: 2,
-    label: 'MRF processing',
-    description: 'Weighing, segregation and AI verification at facility.',
+    label: "MRF processing",
+    description: "Weighing, segregation and AI verification at facility.",
     icon: Factory,
   },
   {
     id: 3,
-    label: 'Marketplace ready',
-    description: 'Batch packaged and ready for recycling partners.',
+    label: "Marketplace ready",
+    description: "Batch packaged and ready for recycling partners.",
     icon: ShoppingBag,
   },
 ];
 
+const currentStepMap: Record<BatchData["status"], number> = {
+  collected: 1,
+  processing: 2,
+  verified: 2,
+  "ready-for-sale": 3,
+  sold: 3,
+};
+
 const JourneyPanel: React.FC<JourneyPanelProps> = ({
   batch,
   onGenerateReport,
+  onListToMarketplace,
 }) => {
   const [isListing, setIsListing] = useState(false);
-  const [listed, setListed] = useState(false);
+  const [locallyListed, setLocallyListed] = useState(false);
 
-  const handleListToMarketplace = async () => {
+  const currentStep = currentStepMap[batch.status];
+
+  const alreadySold = batch.status === "sold";
+  const isBatchListed =
+    locallyListed ||
+    batch.status === "ready-for-sale" ||
+    batch.status === "sold";
+
+  const canListToMarketplace = useMemo(
+    () => batch.status === "verified" || batch.status === "ready-for-sale",
+    [batch.status]
+  );
+
+  const handleListClick = async () => {
+    if (!canListToMarketplace || isBatchListed || alreadySold) return;
+
     setIsListing(true);
-    setListed(false);
-    await new Promise((resolve) => setTimeout(resolve, 900)); // simulate API
+    setLocallyListed(false);
+
+    // simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
     setIsListing(false);
-    setListed(true);
+    setLocallyListed(true);
+
+    // notify parent (Dashboard -> App) so it can create marketplace listing
+    if (onListToMarketplace) {
+      onListToMarketplace();
+    }
   };
 
   return (
@@ -58,10 +91,15 @@ const JourneyPanel: React.FC<JourneyPanelProps> = ({
           Journey status
         </h3>
         <ol className="space-y-3">
-          {steps.map((step, index) => {
+          {steps.map((step) => {
             const Icon = step.icon;
-            const isCompleted = index === 0 || (index === 1 && listed);
-            const isCurrent = index === 1 && !listed;
+
+            const isCompleted =
+              step.id < currentStep ||
+              (step.id === currentStep &&
+                (batch.status === "ready-for-sale" || batch.status === "sold"));
+
+            const isCurrent = step.id === currentStep && !isCompleted;
 
             return (
               <li key={step.id} className="flex gap-3">
@@ -78,11 +116,13 @@ const JourneyPanel: React.FC<JourneyPanelProps> = ({
                     <span className="text-sm font-medium text-slate-900">
                       {step.label}
                     </span>
+
                     {isCurrent && (
                       <span className="text-[10px] rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 border border-amber-100">
                         In progress
                       </span>
                     )}
+
                     {isCompleted && !isCurrent && (
                       <span className="text-[10px] rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 border border-emerald-100">
                         Completed
@@ -107,17 +147,27 @@ const JourneyPanel: React.FC<JourneyPanelProps> = ({
         >
           Generate batch report
         </button>
+
         <button
-          onClick={handleListToMarketplace}
-          disabled={isListing}
+          onClick={handleListClick}
+          disabled={isListing || !canListToMarketplace || alreadySold || isBatchListed}
           className="w-full rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
-          {isListing ? 'Listing to marketplace…' : 'List batch to marketplace'}
+          {alreadySold
+            ? "Batch already sold"
+            : !canListToMarketplace
+            ? "Segregation not completed yet"
+            : isListing
+            ? "Listing to marketplace…"
+            : isBatchListed
+            ? "Listed to marketplace"
+            : "List batch to marketplace"}
         </button>
-        {listed && (
+
+        {isBatchListed && !alreadySold && (
           <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-2 py-1">
-            ✅ {batch.truckId} / {batch.id} listed with high-quality segregation (
-            {batch.segregationScore}%).
+            ✅ {batch.truckId} / {batch.id} listed on marketplace with
+            segregation score {batch.segregationScore}%.
           </p>
         )}
       </div>

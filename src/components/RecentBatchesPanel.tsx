@@ -1,6 +1,6 @@
 // src/components/RecentBatchesPanel.tsx
-import type { BatchData } from './Dashboard';
-import { ArrowUpRight } from 'lucide-react';
+import type { BatchData } from "./Dashboard";
+import { ArrowUpRight } from "lucide-react";
 
 interface RecentBatchesPanelProps {
   batches: BatchData[];
@@ -13,6 +13,9 @@ const RecentBatchesPanel: React.FC<RecentBatchesPanelProps> = ({
 }) => {
   // In real life you'd sort by timestamp; here we just show them as passed
   const rows = batches;
+
+  const hasSegregationData = (batch: BatchData) =>
+    ["processing", "verified", "ready-for-sale", "sold"].includes(batch.status);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
@@ -44,11 +47,13 @@ const RecentBatchesPanel: React.FC<RecentBatchesPanelProps> = ({
           <tbody>
             {rows.map((batch) => {
               const isActive = batch.id === selectedBatchId;
+              const showSeg = hasSegregationData(batch);
+
               return (
                 <tr
                   key={batch.id}
                   className={`border-t border-slate-100 text-slate-700 ${
-                    isActive ? 'bg-emerald-50/70' : 'bg-white'
+                    isActive ? "bg-emerald-50/70" : "bg-white"
                   }`}
                 >
                   <td className="px-3 py-2 align-middle">
@@ -67,9 +72,15 @@ const RecentBatchesPanel: React.FC<RecentBatchesPanelProps> = ({
                     </span>
                   </td>
                   <td className="px-3 py-2 align-middle text-right">
-                    <span className="text-[11px] font-semibold text-slate-900">
-                      {batch.segregationScore}%
-                    </span>
+                    {showSeg ? (
+                      <span className="text-[11px] font-semibold text-slate-900">
+                        {batch.segregationScore}%
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-slate-400">
+                        Pending
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2 align-middle text-right">
                     <span className="text-[11px] font-semibold text-emerald-700">

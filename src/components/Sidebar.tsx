@@ -8,7 +8,7 @@ import {
   Trophy,
 } from 'lucide-react';
 
-export type NavSection = 'dashboard' | 'marketplace' | 'batches' | 'ai' | 'reports' | 'rewards';
+export type NavSection = 'buyer-marketplace' | 'dashboard' | 'marketplace' | 'rewards';
 
 type NavItem = {
   id: NavSection;
@@ -18,10 +18,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
-  { id: 'batches', label: 'Batches', icon: BarChart2 },
-  { id: 'ai', label: 'AI Lab', icon: Cpu },
   { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
-  { id: 'reports', label: 'Reports', icon: FileText },
   { id: 'rewards', label: 'Rewards & Impact', icon: Trophy }, // ✅ fixed key names
 
 ];
